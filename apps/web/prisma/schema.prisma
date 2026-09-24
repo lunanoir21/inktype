@@ -1,0 +1,71 @@
+// Inktype's server database. Everything here is optional: the app works fully
+// offline with localStorage. The server only caches book texts and stores
+// synced data for readers who create a local account.
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// Cleaned plain text of a Project Gutenberg book, cached after first fetch.
+model BookText {
+  id        Int      @id
+  title     String
+  author    String
+  language  String
+  text      String
+  fetchedAt DateTime @default(now())
+}
+
+model User {
+  id           String    @id @default(cuid())
+  username     String    @unique
+  passwordHash String
+  createdAt    DateTime  @default(now())
+  sessions     Session[]
+  syncData     SyncData?
+}
+
+model Session {
+  /// SHA-256 of the session token; the raw token only lives in the cookie.
+  id        String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+/// The merged InktypeData JSON document for a user.
+model SyncData {
+  userId    String   @id
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  data      String
+  updatedAt DateTime @updatedAt
+}
+
+/// Cleaned text of a Wikisource work (e.g. Turkish Vikikaynak), cached after first fetch.
+model WikiText {
+  /// "<lang>:<page title>"
+  key       String   @id
+  title     String
+  author    String
+  language  String
+  text      String
+  fetchedAt DateTime @default(now())
+}
+
+/// Book cover images, proxied once from Project Gutenberg so browsers never
+/// contact third parties. An empty `data` records that a book has no cover.
+model Cover {
+  key       String   @id
+  type      String
+  data      Bytes
+  fetchedAt DateTime @default(now())
+}

@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Theme tokens as "r g b" triplets. The boot script in layout.tsx sets the
+ * reader's theme before first paint; these are the light fallbacks.
+ */
+:root {
+  --drawer-w: 340px;
+  --bg: 251 250 247;
+  --fg: 28 27 25;
+  --muted: 142 137 128;
+  --accent: 37 72 128;
+  --error: 196 48 43;
+  --surface: 243 241 236;
+  --line: 226 222 214;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --bg: 21 20 18;
+    --fg: 226 221 211;
+    --muted: 118 113 104;
+    --accent: 140 172 222;
+    --error: 239 107 96;
+    --surface: 31 30 27;
+    --line: 50 48 44;
+    color-scheme: dark;
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-bg font-sans text-fg antialiased;
+    font-feature-settings: "kern", "liga", "calt";
+  }
+  ::selection {
+    background: rgb(var(--accent) / 0.2);
+  }
+  :focus-visible {
+    outline: 2px solid rgb(var(--accent) / 0.5);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  /* Fade the text out towards the top and bottom edges of the typing viewport. */
+  .typing-mask {
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 22%, #000 78%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 22%, #000 78%, transparent 100%);
+  }
+  .smallcaps {
+    font-variant: all-small-caps;
+    letter-spacing: 0.08em;
+  }
+}
+
+/* ---------------------------------------------------------------- typing effects
+ * Applied for a moment to a freshly typed character (see typing-area.tsx). */
+.fx-typewriter { display: inline-block; animation: fx-typewriter 140ms ease-out; }
+.fx-glow { animation: fx-glow 600ms ease-out; }
+.fx-crunch { display: inline-block; animation: fx-crunch 180ms ease-out; transform-origin: bottom; }
+.fx-float { display: inline-block; animation: fx-float 450ms cubic-bezier(.2,.7,.3,1); }
+.fx-corrupt { display: inline-block; animation: fx-corrupt 260ms steps(2) ; }
+.fx-burn { animation: fx-burn 700ms ease-out; }
+.fx-pixelate { display: inline-block; animation: fx-pixelate 300ms steps(3); }
+@keyframes fx-typewriter { from { transform: translateY(-0.12em) scale(1.25); opacity: .4; } to { transform: none; opacity: 1; } }
+@keyframes fx-glow { from { text-shadow: 0 0 .35em rgb(var(--accent)), 0 0 .8em rgb(var(--accent) / .7); color: rgb(var(--accent)); } to { text-shadow: none; } }
+@keyframes fx-crunch { 0% { transform: scale(1.15, .7); } 60% { transform: scale(.95, 1.08); } 100% { transform: none; } }
+@keyframes fx-float { from { transform: translateY(-0.35em); } to { transform: none; } }
+@keyframes fx-corrupt {
+  0% { transform: translate(2px, -1px) skewX(12deg); text-shadow: -2px 0 #ff2a6d, 2px 0 #05d9e8; }
+  50% { transform: translate(-2px, 1px) skewX(-8deg); text-shadow: 2px 0 #ff2a6d, -2px 0 #05d9e8; }
+  100% { transform: none; text-shadow: none; }
+}
+@keyframes fx-burn { 0% { color: #fff3c4; text-shadow: 0 0 .3em #ff7b29; } 40% { color: #ff9d3b; } 100% { text-shadow: none; } }
+@keyframes fx-pixelate { 0% { filter: blur(3px); } 50% { filter: blur(1.5px); } 100% { filter: none; } }
+
+.cursor-rainbow { animation: cursor-rainbow 1.6s linear infinite; }
+@keyframes cursor-rainbow { from { filter: hue-rotate(0deg) saturate(2); } to { filter: hue-rotate(360deg) saturate(2); } }
+
+.crt-overlay {
+  background:
+    repeating-linear-gradient(0deg, rgb(0 0 0 / 0) 0 2px, rgb(0 0 0 / .18) 2px 3px),
+    radial-gradient(ellipse at center, rgb(0 0 0 / 0) 55%, rgb(0 0 0 / .45) 100%);
+  animation: crt-flicker 4s steps(40) infinite;
+}
+@keyframes crt-flicker { 0%, 100% { opacity: .9; } 50% { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+  }
+}

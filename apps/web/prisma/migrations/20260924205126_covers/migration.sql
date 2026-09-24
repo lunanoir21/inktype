@@ -1,0 +1,7 @@
+-- CreateTable
+CREATE TABLE "Cover" (
+    "key" TEXT NOT NULL PRIMARY KEY,
+    "type" TEXT NOT NULL,
+    "data" BLOB NOT NULL,
+    "fetchedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
