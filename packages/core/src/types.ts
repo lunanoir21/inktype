@@ -4,7 +4,7 @@
  * export as JSON, and what we sync to a self-hosted server.
  */
 
-export type TextSource = "gutenberg" | "wikisource" | "custom";
+export type TextSource = "gutenberg" | "wikisource" | "pga" | "custom";
 
 /** One completed page. Sessions are the source of truth for all statistics. */
 export interface PageSession {

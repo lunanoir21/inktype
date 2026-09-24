@@ -54,7 +54,16 @@ export function warmBook(bookKey: string): void {
   let url: string | null = null;
   const g = /^gutenberg:(\d+)$/.exec(bookKey);
   if (g) url = `/api/books/${g[1]}/text`;
+  const p = /^pga:(\d{7})$/.exec(bookKey);
+  if (p) url = `/api/pga/${p[1]}/text`;
   const w = /^wikisource:(\w+):(.+)$/.exec(bookKey);
   if (w) url = `/api/wikisource/text?${new URLSearchParams({ lang: w[1]!, title: w[2]! })}`;
   if (url) fetch(url, { priority: "low" } as RequestInit).catch(() => warmed.delete(bookKey));
+}
+
+export async function loadPgaBook(id: string): Promise<LoadedBook> {
+  const res = await fetch(`/api/pga/${id}/text`);
+  const json = (await res.json().catch(() => ({}))) as LoadedBook & { error?: string };
+  if (!res.ok) throw new Error(json.error ?? "Could not load this book.");
+  return json;
 }

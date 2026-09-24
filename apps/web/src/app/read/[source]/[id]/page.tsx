@@ -5,7 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Reader } from "@/components/typing/reader";
 import { Button } from "@/components/ui/button";
-import { loadGutenbergBook, loadWikisourceWork, pagesFor, type LoadedBook } from "@/lib/books";
+import { loadGutenbergBook, loadPgaBook, loadWikisourceWork, pagesFor, type LoadedBook } from "@/lib/books";
 import { useStore } from "@/lib/store";
 import { useHydrated } from "@/lib/use-hydrated";
 import { useT } from "@/lib/i18n";
@@ -15,6 +15,7 @@ export default function ReadPage({ params }: { params: { source: string; id: str
   if (params.source === "gutenberg") return <GutenbergReader id={Number(params.id)} />;
   if (params.source === "custom") return <CustomReader id={params.id} />;
   if (params.source === "wikisource") return <WikisourceReader id={decodeURIComponent(params.id)} />;
+  if (params.source === "pga") return <PgaReader id={params.id} />;
   notFound();
 }
 
@@ -52,6 +53,37 @@ function GutenbergReader({ id }: { id: number }) {
       pages={pages}
       language={book.language}
     />
+  );
+}
+
+/** A Project Gutenberg Australia book; `id` is its seven-digit number. */
+function PgaReader({ id }: { id: string }) {
+  const hydrated = useHydrated();
+  const [book, setBook] = useState<LoadedBook | null>(null);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setBook(null);
+    setError(false);
+    loadPgaBook(id)
+      .then((b) => !cancelled && setBook(b))
+      .catch(() => !cancelled && setError(true));
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  const pages = useMemo(() => (book ? pagesFor(`pga:${id}`, book.text) : null), [book, id]);
+
+  useEffect(() => {
+    if (book) document.title = `${book.title} · Inktype`;
+  }, [book]);
+
+  if (error) return <Message title="reader.wouldNotOpen" detail="reader.loadFailed" />;
+  if (!book || !pages || !hydrated) return <Loading />;
+  return (
+    <Reader bookKey={`pga:${id}`} source="pga" title={book.title} author={book.author} pages={pages} language={book.language} />
   );
 }
 

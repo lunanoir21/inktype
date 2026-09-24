@@ -8,7 +8,7 @@
  * - Everything else under /api: network only.
  */
 
-const VERSION = "v2";
+const VERSION = "v3";
 const SHELL = `inktype-shell-${VERSION}`;
 const ASSETS = `inktype-assets-${VERSION}`;
 const BOOKS = "inktype-books"; // not versioned: book texts never change
@@ -69,7 +69,12 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  if (/^\/api\/books\/\d+\/text$/.test(url.pathname) || url.pathname === "/api/wikisource/text") {
+  if (
+    /^\/api\/(books\/\d+|pga\/\d{7})\/text$/.test(url.pathname) ||
+    url.pathname === "/api/wikisource/text" ||
+    url.pathname.startsWith("/api/covers/") ||
+    url.pathname === "/api/image"
+  ) {
     event.respondWith(cacheFirst(request, BOOKS));
   } else if (url.pathname.startsWith("/api/")) {
     return; // network only
