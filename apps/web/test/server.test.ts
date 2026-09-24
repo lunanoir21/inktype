@@ -97,3 +97,29 @@ describe("wikisource", async () => {
     expect(cleanWikisourceText(text)).toBe("Korkma, sönmez bu şafaklarda yüzen al sancak;");
   });
 });
+
+describe("project gutenberg australia", async () => {
+  const { parsePgaIndex, stripPgaBoilerplate, fold } = await import("@/lib/pga.server");
+  it("parses author sections and their books", () => {
+    const html = `<tr><td><a name="orwell"></a><a href="/pages/orwell.html"><b>George ORWELL (1903-1950)</b></a></td></tr>
+      <tr><td><ul><li>Animal Farm (1945)--<a href="/ebooks01/0100011.txt">Text</a>--<a href="/ebooks01/0100011h.html">HTML</a></li>
+      <li>Essays <a href="/ebooks16/1600051h.html">HTML</a></li></ul></td></tr>
+      <tr><td><a name="osborne"></a><b>Duffield OSBORNE</b></td></tr>
+      <tr><td><ul><li>The Lion's Brood (1901)--<a href="/ebooks03/0300011h.html">HTML</a></li></ul></td></tr>`;
+    const sections = parsePgaIndex(html);
+    expect(sections).toHaveLength(2);
+    expect(sections[1]!.books[0]!.title).toBe("The Lion's Brood");
+    expect(sections[0]!.author).toBe("George ORWELL");
+    expect(sections[0]!.books).toEqual([
+      { id: "0100011", title: "Animal Farm", author: "George ORWELL" },
+      { id: "1600051", title: "Essays", author: "George ORWELL" },
+    ]);
+  });
+  it("strips the licence header", () => {
+    const raw = "Project Gutenberg Australia\nTitle: X\nTo contact Project Gutenberg of Australia go to gutenberg.net.au\n\nTitle: X\nAuthor: Y\n\nChapter I\n\nText.\n\nTHE END\n\nProject Gutenberg Australia\n";
+    expect(stripPgaBoilerplate(raw)).toBe("Chapter I\n\nText.\n\nTHE END");
+  });
+  it("folds accents and Turkish dotless i", () => {
+    expect(fold("Çiftliğı Ömer")).toBe("ciftligi omer");
+  });
+});
