@@ -9,7 +9,8 @@ import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { BookCard } from "./book-card";
-import { useT } from "@/lib/i18n";
+import { useLocale, useT } from "@/lib/i18n";
+import { AuthorCard, type AuthorSummary } from "@/components/authors/author-card";
 import type { MessageKey } from "@/lib/i18n/messages";
 
 type Source = "gutenberg" | "wikisource";
@@ -58,6 +59,27 @@ interface Item {
   key: string;
   title: string;
   author: string;
+  /** Books found in another library (e.g. PG Australia) carry a label. */
+  source?: "gutenberg" | "pga";
+}
+
+interface Discovery {
+  authors: AuthorSummary[];
+  books: Item[];
+}
+
+const discoverCache = new Map<string, Promise<Discovery>>();
+
+/** Authors and translated-title matches for a query (see /api/discover). */
+function discover(q: string, lang: string): Promise<Discovery> {
+  const key = `${lang}|${q}`;
+  const hit = discoverCache.get(key);
+  if (hit) return hit;
+  const p = fetch(`/api/discover?${new URLSearchParams({ q, lang })}`)
+    .then((r) => (r.ok ? (r.json() as Promise<Discovery>) : { authors: [], books: [] }))
+    .catch(() => ({ authors: [], books: [] }));
+  discoverCache.set(key, p);
+  return p;
 }
 
 /**
@@ -83,6 +105,19 @@ export function LibraryBrowser() {
   const requestId = useRef(0);
   const progress = useStore((s) => s.data.progress);
   const t = useT();
+  const locale = useLocale();
+  const [found, setFound] = useState<Discovery>({ authors: [], books: [] });
+
+  // Look up authors and translated titles for the query in parallel with the search.
+  useEffect(() => {
+    setFound({ authors: [], books: [] });
+    if (q.trim().length < 2) return;
+    let cancelled = false;
+    void discover(q.trim(), locale).then((d) => !cancelled && setFound(d));
+    return () => {
+      cancelled = true;
+    };
+  }, [q, locale]);
 
   useEffect(() => setInput(q), [q]);
 
@@ -232,6 +267,19 @@ export function LibraryBrowser() {
         </div>
       </div>
 
+      {found.authors.length > 0 && (
+        <section className="mt-6" aria-labelledby="authors-heading">
+          <h2 id="authors-heading" className="smallcaps mb-3 text-sm text-muted">
+            {t("library.authors")}
+          </h2>
+          <div className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-2 [scrollbar-width:thin] sm:mx-0 sm:px-0">
+            {found.authors.map((a) => (
+              <AuthorCard key={a.id} author={a} />
+            ))}
+          </div>
+        </section>
+      )}
+
       <h2 className="smallcaps mb-5 mt-6 text-sm text-muted">{heading}</h2>
 
       {error && (
@@ -243,12 +291,15 @@ export function LibraryBrowser() {
         </div>
       )}
 
-      {!error && !loading && items.length === 0 && (
+      {!error && !loading && items.length === 0 && (source !== "gutenberg" || found.books.length === 0) && (
         <p className="py-16 text-center font-serif text-xl italic text-muted">{t("library.none")}</p>
       )}
 
       <div className="grid grid-cols-3 gap-x-4 gap-y-7 sm:grid-cols-4 md:grid-cols-6" data-testid="library-results">
-        {items.map((b) => {
+        {(source === "gutenberg"
+          ? [...found.books.filter((b) => !items.some((x) => x.key === b.key)), ...items]
+          : items
+        ).map((b) => {
           const p = progress[b.key];
           return (
             <BookCard
@@ -258,6 +309,7 @@ export function LibraryBrowser() {
               title={b.title}
               author={b.author}
               progress={p && p.totalPages ? p.page / p.totalPages : undefined}
+              badge={b.source === "pga" ? t("source.pga") : undefined}
             />
           );
         })}

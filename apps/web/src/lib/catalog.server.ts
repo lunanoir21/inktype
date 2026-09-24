@@ -88,3 +88,27 @@ export async function prewarmCatalog(genres: string[]): Promise<void> {
     await new Promise((r) => setTimeout(r, 250));
   }
 }
+
+/** Books by a Project Gutenberg author id, most downloaded first (up to 3 feed pages). */
+export async function booksByGutenbergAuthor(authorId: string): Promise<BookSummary[]> {
+  if (!/^\d+$/.test(authorId)) return [];
+  const all: BookSummary[] = [];
+  for (let start = 1; start <= 51; start += PAGE_SIZE) {
+    const key = `author=${authorId}&start=${start}`;
+    const page = await cache.get(key, async () => {
+      const qs = new URLSearchParams({ sort_order: "downloads" });
+      if (start > 1) qs.set("start_index", String(start));
+      const res = await fetch(`${MIRROR}/ebooks/author/${authorId}.opds?${qs}`, {
+        headers: { "User-Agent": USER_AGENT, Accept: "application/atom+xml" },
+        signal: AbortSignal.timeout(20_000),
+        cache: "no-store",
+      });
+      if (!res.ok) throw new Error(`Gutenberg responded ${res.status}`);
+      const { books, hasNext } = parseOpds(await res.text());
+      return { page: start, hasNext, books };
+    });
+    all.push(...page.books);
+    if (!page.hasNext) break;
+  }
+  return all.filter((b, i) => all.findIndex((x) => x.id === b.id) === i);
+}

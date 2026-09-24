@@ -11,6 +11,7 @@ export function BookCard({
   meta,
   progress,
   bookKey,
+  badge,
 }: {
   href: string;
   title: string;
@@ -20,6 +21,8 @@ export function BookCard({
   progress?: number;
   /** Enables the real cover and pre-loading the text on hover. */
   bookKey?: string;
+  /** Small source label, e.g. "PG Australia". */
+  badge?: string;
 }) {
   const warm = () => bookKey && warmBook(bookKey);
   return (
@@ -41,6 +44,11 @@ export function BookCard({
         <div className="mt-2 h-0.5 w-full overflow-hidden rounded-full bg-line">
           <div className="h-full bg-fg/70" style={{ width: `${Math.max(2, progress * 100)}%` }} />
         </div>
+      )}
+      {badge && (
+        <span className="mt-2 inline-block rounded-full border border-accent/40 px-1.5 py-px text-[10px] text-accent">
+          {badge}
+        </span>
       )}
       <p className="mt-2 line-clamp-2 font-serif text-sm leading-snug">{title}</p>
       <p className="mt-0.5 line-clamp-1 text-xs text-muted">{author}</p>
