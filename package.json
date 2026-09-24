@@ -1,0 +1,22 @@
+{
+  "name": "inktype",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Free, open-source typing practice through real books.",
+  "license": "MIT",
+  "packageManager": "pnpm@11.15.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @inktype/web dev",
+    "build": "pnpm --filter @inktype/web build",
+    "start": "pnpm --filter @inktype/web start",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "test:e2e": "pnpm --filter @inktype/web test:e2e",
+    "db:migrate": "pnpm --filter @inktype/web db:migrate",
+    "db:deploy": "pnpm --filter @inktype/web db:deploy"
+  }
+}
