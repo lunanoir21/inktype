@@ -171,24 +171,46 @@
   }
 
   /* ----------------------------------------------------------- typing demo */
+  // The console types by itself (a "ghost typist" at ~65 wpm, with the odd
+  // mistake it goes back to fix). Clicking or typing hands it to the visitor;
+  // after a few idle seconds the ghost takes over again. Visitors are never
+  // blocked by a mistake: wrong letters turn red and the cursor moves on.
   const box = document.getElementById("demo");
   const out = document.getElementById("demo-text");
   const input = document.getElementById("demo-input");
+  const hint = document.getElementById("demo-hint");
   const wpmEl = document.getElementById("wpm");
   const accEl = document.getElementById("acc");
+  const chips = [...document.querySelectorAll(".fx-chips button")];
+  const GHOST_FX = ["sparkle", "embers", "fireworks", "ink"];
   let text = "";
-  let pos = 0;
-  let wrong = false;
+  let marks = []; // "ok" | "bad" per typed character
   let keys = 0;
   let good = 0;
   let start = 0;
   let effect = "none";
+  let userPicked = false;
   let spans = [];
+  let mode = "ghost"; // "ghost" | "user"
+  let ghostTimer = 0;
+  let idleTimer = 0;
+  let round = 0;
+  let visible = true;
+
+  const HINT = {
+    en: { ghost: "Watching a demo — click to try it yourself", user: "Your turn — just type. Esc hands it back." },
+    tr: { ghost: "Demo oynuyor — kendin denemek için tıkla", user: "Sıra sende — yazmaya başla. Esc ile demoya dön." },
+  };
+
+  function setEffect(fx, fromUser) {
+    effect = fx;
+    if (fromUser) userPicked = true;
+    chips.forEach((x) => x.setAttribute("aria-checked", String(x.dataset.fx === fx)));
+  }
 
   function reset() {
     text = DEMO[lang].text;
-    pos = 0;
-    wrong = false;
+    marks = [];
     keys = good = start = 0;
     out.innerHTML = "";
     spans = [...text].map((ch) => {
@@ -200,49 +222,178 @@
     render();
     wpmEl.textContent = "—";
     accEl.textContent = "—";
+    hint.textContent = HINT[lang][mode];
   }
+
   function render() {
-    spans.forEach((s, i) => (s.className = i < pos ? "t" : i === pos ? (wrong ? "e c" : "c") : ""));
+    const pos = marks.length;
+    spans.forEach((s, i) => {
+      s.className = i < pos ? (marks[i] === "ok" ? "t" : "e") : i === pos ? "c" : "";
+    });
   }
-  function type(ch) {
-    if (pos >= text.length) return reset();
+
+  function stats() {
+    const min = (performance.now() - start) / 60000;
+    const correct = marks.filter((m) => m === "ok").length;
+    if (min > 0.02) wpmEl.textContent = String(Math.round(correct / 5 / min));
+    accEl.textContent = `${Math.round((good / Math.max(1, keys)) * 1000) / 10}%`;
+  }
+
+  function press(ch) {
+    const pos = marks.length;
+    if (pos >= text.length) return;
     if (!start) start = performance.now();
     keys++;
-    if (ch === text[pos]) {
-      good++;
-      wrong = false;
+    const ok = ch === text[pos] || ch.toLocaleLowerCase(lang) === text[pos].toLocaleLowerCase(lang);
+    if (ok) good++;
+    marks.push(ok ? "ok" : "bad");
+    if (ok && effect !== "none") {
       const r = spans[pos].getBoundingClientRect();
-      pos++;
-      if (effect !== "none") burst(effect, r.left + r.width / 2, r.bottom - r.height * 0.25, r.height);
-    } else wrong = true;
+      burst(effect, r.left + r.width / 2, r.bottom - r.height * 0.25, r.height);
+    }
     render();
-    const min = (performance.now() - start) / 60000;
-    if (min > 0.02) wpmEl.textContent = Math.round(pos / 5 / min);
-    accEl.textContent = `${Math.round((good / keys) * 1000) / 10}%`;
-    if (pos >= text.length) setTimeout(reset, 1600);
+    stats();
   }
-  box.addEventListener("click", () => input.focus({ preventScroll: true }));
+
+  function backspace() {
+    if (marks.length === 0) return;
+    marks.pop();
+    render();
+  }
+
+  /* The ghost typist */
+  function ghostStep() {
+    clearTimeout(ghostTimer);
+    if (mode !== "ghost") return;
+    if (!visible || document.hidden) {
+      ghostTimer = setTimeout(ghostStep, 400);
+      return;
+    }
+    const pos = marks.length;
+    if (pos >= text.length) {
+      // Finished: pause, then start again with the next effect.
+      ghostTimer = setTimeout(() => {
+        round++;
+        if (!userPicked) setEffect(GHOST_FX[round % GHOST_FX.length], false);
+        reset();
+        ghostStep();
+      }, 2200);
+      return;
+    }
+    const last = marks[pos - 1];
+    if (last === "bad") {
+      backspace(); // notice the typo and fix it
+      ghostTimer = setTimeout(ghostStep, 260);
+      return;
+    }
+    const target = text[pos];
+    const typo = pos > 3 && /[a-zçğıöşü]/i.test(target) && Math.random() < 0.035;
+    press(typo ? String.fromCharCode(target.charCodeAt(0) + 1) : target);
+    // ~65 wpm with a human rhythm: slower after spaces and punctuation.
+    const base = 150 + Math.random() * 80;
+    const pauseAfter = /[.,!?;]/.test(target) ? 260 : target === " " ? 60 : 0;
+    ghostTimer = setTimeout(ghostStep, base + pauseAfter + (typo ? 220 : 0));
+  }
+
+  function toGhost() {
+    mode = "ghost";
+    input.blur();
+    reset();
+    ghostTimer = setTimeout(ghostStep, 700);
+  }
+
+  function toUser() {
+    if (mode === "user") return;
+    mode = "user";
+    clearTimeout(ghostTimer);
+    reset();
+    box.classList.add("user");
+  }
+
+  function scheduleIdle() {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+      box.classList.remove("user");
+      toGhost();
+    }, 9000);
+  }
+
+  box.addEventListener("click", () => {
+    toUser();
+    input.focus({ preventScroll: true });
+    scheduleIdle();
+  });
   box.addEventListener("keydown", (e) => {
-    if (e.target === box && e.key.length === 1) {
+    if (e.target === box && (e.key.length === 1 || e.key === "Enter")) {
+      toUser();
       input.focus({ preventScroll: true });
     }
   });
   input.addEventListener("input", () => {
-    for (const ch of input.value) type(ch);
+    toUser();
+    for (const ch of input.value) press(ch);
     input.value = "";
+    if (marks.length >= text.length) setTimeout(() => mode === "user" && reset(), 1500);
+    scheduleIdle();
   });
   input.addEventListener("keydown", (e) => {
-    if (e.key === "Tab") return;
-    if (e.key === "Escape") input.blur();
+    if (e.key === "Backspace") {
+      e.preventDefault();
+      backspace();
+      scheduleIdle();
+    } else if (e.key === "Escape") {
+      clearTimeout(idleTimer);
+      box.classList.remove("user");
+      toGhost();
+    }
   });
 
-  document.querySelectorAll(".fx-chips button").forEach((b) =>
+  chips.forEach((b) =>
     b.addEventListener("click", () => {
-      effect = b.dataset.fx;
-      document.querySelectorAll(".fx-chips button").forEach((x) => x.setAttribute("aria-checked", String(x === b)));
-      input.focus({ preventScroll: true });
+      setEffect(b.dataset.fx, true);
     }),
   );
+
+  // Only animate while the console is on screen.
+  new IntersectionObserver((entries) => (visible = entries.some((e) => e.isIntersecting))).observe(box);
+
+  /* ----------------------------------------------------- search showcase */
+  const EXAMPLES = {
+    en: [
+      ["hayvan çiftliği", "Animal Farm", "George Orwell · PG Australia"],
+      ["crime and punishment", "Crime and Punishment", "Fyodor Dostoyevsky · Project Gutenberg"],
+      ["ömer seyfettin", "Ömer Seyfettin", "Author profile · 24 works on Vikikaynak"],
+      ["orwell", "George Orwell", "Author profile · 1903–1950"],
+    ],
+    tr: [
+      ["hayvan çiftliği", "Animal Farm", "George Orwell · PG Avustralya"],
+      ["suç ve ceza", "Crime and Punishment", "Fyodor Dostoyevski · Project Gutenberg"],
+      ["ömer seyfettin", "Ömer Seyfettin", "Yazar profili · Vikikaynak'ta 24 eser"],
+      ["orwell", "George Orwell", "Yazar profili · 1903–1950"],
+    ],
+  };
+  const qEl = document.getElementById("search-q");
+  const hit = document.querySelector(".search-hit");
+  let ex = 0;
+  async function showcase() {
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    for (;;) {
+      const [query, title, meta] = EXAMPLES[lang][ex % EXAMPLES[lang].length];
+      ex++;
+      hit.classList.add("hidden");
+      qEl.textContent = "";
+      for (const ch of query) {
+        qEl.textContent += ch;
+        await sleep(reduced ? 0 : 90 + Math.random() * 60);
+      }
+      await sleep(350);
+      hit.querySelector("b").textContent = title;
+      hit.querySelector("span").textContent = meta;
+      hit.classList.remove("hidden");
+      await sleep(2600);
+      if (reduced) return;
+    }
+  }
 
   /* -------------------------------------------------------- copy buttons */
   document.querySelectorAll(".copy").forEach((b) =>
@@ -263,4 +414,13 @@
   );
 
   applyLang();
+  if (reduced) {
+    // No animation: show a finished demo line instead of a typing one.
+    marks = [...text].slice(0, 42).map(() => "ok");
+    render();
+  } else {
+    setEffect(GHOST_FX[0], false); // start the show with an effect
+    toGhost();
+  }
+  void showcase();
 })();
