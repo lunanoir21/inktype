@@ -1,6 +1,10 @@
+<p align="center">
+  <img src="docs/brand/social.png" alt="Inktype — type your way through great books" width="720">
+</p>
+
 # Inktype
 
-**Type your way through the books you always meant to read.**
+**Type your way through the books you always meant to read.** · [Website](https://lunanoir21.github.io/inktype/)
 
 [![CI](https://github.com/lunanoir21/inktype/actions/workflows/ci.yml/badge.svg)](https://github.com/lunanoir21/inktype/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-7fd6a4.svg)](LICENSE)
@@ -8,7 +12,8 @@
 
 Inktype is a free, open-source typing practice app. Instead of random words, you type through real
 books — any of the 70,000+ public-domain titles on [Project Gutenberg](https://www.gutenberg.org), thousands
-of Turkish works on [Vikikaynak](https://tr.wikisource.org) — or any text you paste in, one quiet page at a
+of Turkish works on [Vikikaynak](https://tr.wikisource.org), life + 70 classics from
+[Project Gutenberg Australia](https://gutenberg.net.au) — or any text you paste in, one quiet page at a
 time.
 
 No subscriptions. No paywalls. No locked features. No ads. No tracking. Ever.
@@ -48,6 +53,12 @@ No subscriptions. No paywalls. No locked features. No ads. No tracking. Ever.
 - Search all of Project Gutenberg by title or author; browse by genre and language
 - Turkish literature from Vikikaynak (Turkish Wikisource): Ömer Seyfettin, Halit Ziya, Namık Kemal,
   Yunus Emre and more; multi-chapter works are joined automatically
+- Search in any language: titles are resolved through Wikidata, so "Hayvan Çiftliği" finds
+  *Animal Farm* and "Suç ve Ceza" finds *Crime and Punishment*
+- Author profiles: type an author's name to see their portrait, life dates and Wikipedia summary,
+  and every book of theirs across the libraries
+- Books that are public domain under life + 70 years rules (Orwell, for example) come from
+  Project Gutenberg Australia — check the copyright law of your country
 - Books are fetched only when you open one — nothing is bulk-downloaded — then cached
 - Real book covers, proxied and cached by your server (a typographic cover when a book has none)
 - Fast: search results are cached and pre-warmed, the next page loads in the background, and a
