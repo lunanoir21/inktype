@@ -1,0 +1,22 @@
+# Self-host Inktype:  docker compose up -d   →  http://localhost:3000
+services:
+  inktype:
+    build: .
+    image: inktype:latest
+    container_name: inktype
+    restart: unless-stopped
+    ports:
+      - "${INKTYPE_PORT:-3000}:3000"
+    environment:
+      DATABASE_URL: file:/data/inktype.db
+      # Set to "false" once you've created your own account on a public server.
+      ALLOW_REGISTRATION: ${ALLOW_REGISTRATION:-true}
+      # Set to "true" when served over HTTPS (behind a reverse proxy).
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      GUTENBERG_MIRROR: ${GUTENBERG_MIRROR:-https://www.gutenberg.org}
+    volumes:
+      # Accounts, synced progress and cached book texts.
+      - inktype-data:/data
+
+volumes:
+  inktype-data:
