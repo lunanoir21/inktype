@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Inktype — type your way through great books</title>
+  <meta name="description" content="Free, open-source typing practice through real books: Project Gutenberg, Turkish Vikikaynak, typing effects, 31 themes, stats. Self-hosted, no ads, no tracking.">
+  <meta name="theme-color" content="#131313">
+  <meta property="og:title" content="Inktype — type your way through great books">
+  <meta property="og:description" content="Free, open-source typing practice through real books. No ads, no tracking.">
+  <meta property="og:image" content="https://lunanoir21.github.io/inktype/assets/social.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="assets/mark.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="preload" href="fonts/literata-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <canvas id="fx" aria-hidden="true"></canvas>
+
+  <header class="nav">
+    <a class="brand" href="#top" aria-label="Inktype">
+      <svg viewBox="0 0 100 100" aria-hidden="true"><rect x="12" y="12" width="76" height="76" rx="18" fill="none" stroke="currentColor" stroke-width="7"/><path d="M15 68h70v4a14 14 0 0 1-14 14H29a14 14 0 0 1-14-14z" fill="currentColor" opacity=".16"/><path d="M40 38h14v26h6v6H38v-6h6V44h-4z" fill="currentColor"/><circle cx="49" cy="26" r="6.5" fill="var(--accent)"/></svg>
+      <span>Inktype</span>
+    </a>
+    <nav aria-label="Sections">
+      <a href="#features" data-i18n="nav.features">Features</a>
+      <a href="#libraries" data-i18n="nav.libraries">Libraries</a>
+      <a href="#self-host" data-i18n="nav.selfhost">Self-host</a>
+      <a href="https://github.com/lunanoir21/inktype" class="gh">GitHub</a>
+      <button type="button" id="lang" class="lang" aria-label="Language">TR</button>
+    </nav>
+  </header>
+
+  <main id="top">
+    <!-- Hero: the product itself -->
+    <section class="hero">
+      <p class="eyebrow" data-i18n="hero.eyebrow">Free &amp; open-source typing practice</p>
+      <h1 class="wordmark">Inktype<span>.</span></h1>
+      <p class="tagline" data-i18n="hero.tagline">Type your way through the books you always meant to read.</p>
+
+      <div class="console" id="demo" tabindex="0" aria-label="Typing demo — click and start typing">
+        <div class="console-bar">
+          <span class="crumb"><span class="muted" data-i18n="demo.books">Books</span> <span class="muted">/</span> A Tale of Two Cities</span>
+          <span class="stats"><b id="wpm">—</b> <small>WPM</small> <b id="acc">—</b> <small>ACC</small></span>
+        </div>
+        <p class="demo-text" id="demo-text" aria-hidden="true"></p>
+        <p class="demo-hint" id="demo-hint" data-i18n="demo.hint">Click here and start typing</p>
+        <textarea id="demo-input" class="sr-only" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Type the text"></textarea>
+      </div>
+      <div class="fx-chips" role="radiogroup" aria-label="Typing effect">
+        <span class="muted small" data-i18n="demo.effect">Effect</span>
+        <button type="button" role="radio" aria-checked="true" data-fx="none" data-i18n="fx.none">None</button>
+        <button type="button" role="radio" aria-checked="false" data-fx="sparkle" data-i18n="fx.sparkle">Sparkle</button>
+        <button type="button" role="radio" aria-checked="false" data-fx="embers" data-i18n="fx.embers">Embers</button>
+        <button type="button" role="radio" aria-checked="false" data-fx="fireworks" data-i18n="fx.fireworks">Fireworks</button>
+        <button type="button" role="radio" aria-checked="false" data-fx="ink" data-i18n="fx.ink">Ink</button>
+      </div>
+
+      <div class="cta">
+        <a class="btn primary" href="#self-host" data-i18n="cta.start">Run your own in one command</a>
+        <a class="btn" href="https://github.com/lunanoir21/inktype">★ <span data-i18n="cta.github">Star on GitHub</span></a>
+      </div>
+      <p class="promise muted small" data-i18n="hero.promise">No accounts required · No ads · No tracking · MIT licence</p>
+    </section>
+
+    <!-- Screenshots -->
+    <section class="shots" aria-label="Screenshots">
+      <figure class="shot wide"><img src="assets/shot-typing.webp" alt="Typing through Pride and Prejudice in the Classic Dark look" loading="lazy" width="1600" height="1000"><figcaption data-i18n="shot.typing">The reading console — only the page, the cursor and your pace.</figcaption></figure>
+      <figure class="shot"><img src="assets/shot-settings.webp" alt="Settings drawer with ten looks" loading="lazy" width="1600" height="1000"><figcaption data-i18n="shot.settings">Settings slide in from the right; every effect previews before you pick it.</figcaption></figure>
+      <figure class="shot"><img src="assets/shot-library.webp" alt="Library with real book covers" loading="lazy" width="1600" height="1000"><figcaption data-i18n="shot.library">70,000+ books with real covers, fetched only when you open one.</figcaption></figure>
+      <figure class="shot"><img src="assets/shot-author.webp" alt="George Orwell's author page" loading="lazy" width="1600" height="1000"><figcaption data-i18n="shot.author">Author profiles gather their books from every library.</figcaption></figure>
+      <figure class="shot"><img src="assets/shot-stats.webp" alt="Stats with WPM chart" loading="lazy" width="1600" height="1000"><figcaption data-i18n="shot.stats">Speed over time, streaks and a heatmap of your weak keys.</figcaption></figure>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="section">
+      <h2 data-i18n="features.title">Everything included. Free forever.</h2>
+      <p class="lead muted" data-i18n="features.lead">Inspired by typelit.io, rebuilt from scratch as open source. Nothing is locked, nothing is metered.</p>
+      <div class="features">
+        <article><h3 data-i18n="f.engine.t">A careful typing engine</h3><p data-i18n="f.engine.d">Mistakes inline in red, fix-before-continue or keep-going modes, the current line always centred, pages that turn themselves, idle time never counted.</p></article>
+        <article><h3 data-i18n="f.effects.t">Effects &amp; backgrounds</h3><p data-i18n="f.effects.d">14 typing effects, 9 cursor trails and 10 animated backgrounds — Fireworks, Embers, Night Sky, Digital Rain, Hearth…</p></article>
+        <article><h3 data-i18n="f.looks.t">Ten looks, 31 themes, 38 fonts</h3><p data-i18n="f.looks.d">One click sets theme, font, cursor and background. Every theme is editable; fonts include Literata, Atkinson Hyperlegible and OpenDyslexic.</p></article>
+        <article><h3 data-i18n="f.stats.t">Honest stats</h3><p data-i18n="f.stats.d">Live and average WPM, accuracy, streaks, weekly and monthly charts, a keyboard heatmap — exportable as JSON.</p></article>
+        <article><h3 data-i18n="f.local.t">Local-first &amp; offline</h3><p data-i18n="f.local.d">Progress lives in your browser. Install it as an app; books you've opened stay typeable offline. Optional sync on your own server.</p></article>
+        <article><h3 data-i18n="f.lang.t">English &amp; Türkçe</h3><p data-i18n="f.lang.d">The whole interface in English or Turkish, a Turkish Q on-screen keyboard, and search that understands titles in any language.</p></article>
+        <article><h3 data-i18n="f.texts.t">Your own texts</h3><p data-i18n="f.texts.d">Paste an essay, a poem or your notes — or import any web page — and type through it page by page.</p></article>
+        <article><h3 data-i18n="f.private.t">Private by design</h3><p data-i18n="f.private.d">No analytics, no third-party requests from your browser: fonts, covers and books are served by your own Inktype server.</p></article>
+      </div>
+    </section>
+
+    <!-- Libraries -->
+    <section id="libraries" class="section libraries">
+      <h2 data-i18n="lib.title">Three libraries, one search box</h2>
+      <div class="libs">
+        <article><span class="num">70,000+</span><h3>Project Gutenberg</h3><p data-i18n="lib.pg">Every public-domain book, with covers, genres and languages.</p></article>
+        <article><span class="num">9,000+</span><h3>Vikikaynak</h3><p data-i18n="lib.ws">Turkish literature — Ömer Seyfettin, Halit Ziya, Namık Kemal, Yunus Emre and more.</p></article>
+        <article><span class="num">life + 70</span><h3>PG Australia</h3><p data-i18n="lib.pga">Classics like Animal Farm and Nineteen Eighty-Four, public domain in Turkey and the EU.</p></article>
+      </div>
+      <div class="search-demo">
+        <div class="search-box"><span class="muted">⌕</span> <span id="search-q">hayvan çiftliği</span><span class="caret"></span></div>
+        <span class="arrow">→</span>
+        <div class="search-hit"><b>Animal Farm</b><span class="muted small">George Orwell · PG Australia</span></div>
+      </div>
+      <p class="muted small center" data-i18n="lib.note">Titles resolve through Wikidata, so a Turkish title finds the original — and typing an author's name opens their profile.</p>
+    </section>
+
+    <!-- Self-host -->
+    <section id="self-host" class="section">
+      <h2 data-i18n="host.title">Yours in one command</h2>
+      <p class="lead muted" data-i18n="host.lead">Inktype is a single container with an SQLite file. Run it on a laptop, a Raspberry Pi or a small server.</p>
+      <div class="code-grid">
+        <div class="code"><div class="code-head"><span data-i18n="host.docker">Docker</span><button type="button" class="copy" data-copy="git clone https://github.com/lunanoir21/inktype.git&#10;cd inktype&#10;docker compose up -d" data-i18n="host.copy">Copy</button></div>
+<pre><code><span class="p">$</span> git clone https://github.com/lunanoir21/inktype.git
+<span class="p">$</span> cd inktype
+<span class="p">$</span> docker compose up -d
+<span class="c"># → http://localhost:3000</span></code></pre></div>
+        <div class="code"><div class="code-head"><span data-i18n="host.dev">Development</span><button type="button" class="copy" data-copy="pnpm install&#10;cp apps/web/.env.example apps/web/.env&#10;pnpm db:migrate&#10;pnpm dev" data-i18n="host.copy">Copy</button></div>
+<pre><code><span class="p">$</span> pnpm install
+<span class="p">$</span> cp apps/web/.env.example apps/web/.env
+<span class="p">$</span> pnpm db:migrate
+<span class="p">$</span> pnpm dev</code></pre></div>
+      </div>
+      <p class="muted small" data-i18n="host.stack">Next.js 14 · TypeScript · Tailwind · Prisma + SQLite · Vitest · Playwright · MIT licence</p>
+    </section>
+
+    <!-- Vibe coding -->
+    <section class="section vibe">
+      <div class="vibe-card">
+        <span class="badge" data-i18n="vibe.badge">Made with vibe coding</span>
+        <h2 data-i18n="vibe.title">Built in conversation</h2>
+        <p data-i18n="vibe.p1">Inktype was vibe-coded: the design, the typing engine, the libraries, the effects, the translations and the tests were all written together with an AI coding assistant (Claude Code), steered by a person who described what they wanted and reviewed every step.</p>
+        <p data-i18n="vibe.p2">It is covered by unit and end-to-end tests that run on every push, and it is open source — contributions from people and their assistants alike are welcome.</p>
+        <a class="btn" href="https://github.com/lunanoir21/inktype" data-i18n="vibe.cta">Read the code</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span class="muted small"><span data-i18n="footer.text">Inktype is free and open source under the MIT licence. Book texts courtesy of</span> <a href="https://www.gutenberg.org">Project Gutenberg</a>, <a href="https://tr.wikisource.org">Vikikaynak</a> &amp; <a href="https://gutenberg.net.au">PG Australia</a>.</span>
+    <span class="muted small" data-i18n="footer.nothanks">This page loads no trackers and no third-party fonts.</span>
+  </footer>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
