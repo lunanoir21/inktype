@@ -20,6 +20,15 @@ No subscriptions. No paywalls. No locked features. No ads. No tracking. Ever.
 
 ---
 
+<br>
+
+![built with Claude Code](https://img.shields.io/badge/built%20with-Claude%20Code-D97757)
+![AI-assisted](https://img.shields.io/badge/AI--assisted-yes-e6edf3)
+![directed by human](https://img.shields.io/badge/directed%20by-human-3d444d)
+
+> [!IMPORTANT]
+> **Built with AI.** This project was largely written with [Claude Code](https://claude.com/claude-code). The ideas, design decisions, testing and final review are mine.
+
 ## Screenshots
 
 | Typing | Settings drawer | Library | Stats |
